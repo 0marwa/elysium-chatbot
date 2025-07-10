@@ -69,6 +69,7 @@ function App() {
           isLoading={isLoading} 
           language={language}
           onLanguageChange={handleLanguageChange}
+          onSuggestionClick={handleSendMessage}
         />
         <InputBar 
           onSendMessage={handleSendMessage}
