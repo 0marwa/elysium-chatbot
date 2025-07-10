@@ -75,13 +75,6 @@ const InputBar = ({ onSendMessage, isLoading, language = 'fr' }) => {
           </button>
         </div>
       </form>
-      <div className="input-footer">
-        <p className="disclaimer">
-          {language === 'fr' && 'Assistant Coranique basé sur l\'interprétation Mohammadi'}
-          {language === 'en' && 'Quranic Assistant based on Mohammadi interpretation'}
-          {language === 'ar' && 'مساعد قرآني يعتمد على التفسير المحمدي'}
-        </p>
-      </div>
     </div>
   );
 };

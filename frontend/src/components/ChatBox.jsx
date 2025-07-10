@@ -44,7 +44,7 @@ const translations = {
   }
 };
 
-const ChatBox = ({ messages, isLoading, language, onLanguageChange }) => {
+const ChatBox = ({ messages, isLoading, language, onLanguageChange, onSuggestionClick }) => {
   const messagesEndRef = useRef(null);
   const t = translations[language] || translations.fr;
 
@@ -66,7 +66,13 @@ const ChatBox = ({ messages, isLoading, language, onLanguageChange }) => {
         <p className="examples-title">{t.examplesTitle}</p>
         <ul>
           {t.examples.map((example, index) => (
-            <li key={index}>{example}</li>
+            <li 
+              key={index} 
+              className="suggestion-item"
+              onClick={() => onSuggestionClick && onSuggestionClick(example.replace(/['"]/g, ''))}
+            >
+              {example}
+            </li>
           ))}
         </ul>
       </div>

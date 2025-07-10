@@ -245,6 +245,11 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  cursor: pointer;
+}
+
+.suggestion-item {
+  cursor: pointer;
 }
 
 .welcome-examples li::before {
@@ -264,10 +269,19 @@
   box-shadow: 
     0 8px 24px rgba(109, 76, 65, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border-left-color: #6D4C41;
+  background: linear-gradient(135deg, #FFF8E1, #FFFFFF);
 }
 
 .welcome-examples li:hover::before {
   opacity: 1;
+}
+
+.welcome-examples li:active {
+  transform: translateY(0);
+  box-shadow: 
+    0 4px 12px rgba(109, 76, 65, 0.12),
+    inset 0 2px 4px rgba(109, 76, 65, 0.1);
 }
 
 .welcome-examples li:last-child {
