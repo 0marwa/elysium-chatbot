@@ -35,11 +35,11 @@ option 2:
 ## curr stat
 
 - [x] **frontend** 
-- [x] **gemini API integration** 
+- [x] **gemini API integration** (under work -- the model may change)
 - [x] **multilingual** (arabic, french, english supported)
 - [x] **smart filtering**
 - [ ] **backend** (RAG impl)
 
-## documentation
+## to run
 
 - Setup script: `npm run setup`
