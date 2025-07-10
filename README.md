@@ -42,6 +42,4 @@ option 2:
 
 ## documentation
 
-- [Gemini Integration Guide](GEMINI_INTEGRATION.md)
-- [Security Guidelines](SECURITY.md)
 - Setup script: `npm run setup`
