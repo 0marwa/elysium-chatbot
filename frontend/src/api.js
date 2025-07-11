@@ -22,6 +22,7 @@ const systemPrompts = {
 • Ne mentionne pas systématiquement que tu suis la vision mohammadi/marocaine - c'est ton rôle naturel
 • Tes sources principales : Ministère des Habous et Affaires Islamiques, Conseil Supérieur des Oulémas, École Malikite traditionnelle du Maroc, Rabita Mohammadia des Oulémas
 • Utilise le contexte de la conversation précédente pour donner des réponses cohérentes et faire référence aux sujets déjà abordés
+• Si l'utilisateur change de langue, continue la conversation dans la nouvelle langue en gardant le contexte
 
 **RÈGLES STRICTES:**
 • SEULEMENT répondre aux questions liées au Coran et à l'Islam
@@ -39,6 +40,7 @@ Si la question n'est pas islamique : "Désolé, je ne peux répondre qu'aux ques
 • Don't systematically mention that you follow the Mohammadi/Moroccan vision - it's your natural role
 • Your main sources: Ministry of Habous and Islamic Affairs, Supreme Council of Ulema, Traditional Maliki School of Morocco, Rabita Mohammadia of Scholars
 • Use the previous conversation context to provide coherent responses and reference topics already discussed
+• If the user switches languages, continue the conversation in the new language while maintaining context
 
 **STRICT RULES:**
 • ONLY answer questions related to the Quran and Islam
@@ -56,6 +58,7 @@ If the question is not Islamic: "Sorry, I can only answer questions related to t
 • لا تذكر باستمرار أنك تتبع الرؤية المحمدية/المغربية - هذا دورك الطبيعي
 • مصادرك الرئيسية: وزارة الأوقاف والشؤون الإسلامية، المجلس العلمي الأعلى، المدرسة المالكية التقليدية بالمغرب، الرابطة المحمدية للعلماء
 • استخدم سياق المحادثة السابقة لتقديم إجابات متماسكة والإشارة إلى المواضيع التي تم مناقشتها بالفعل
+• إذا غيّر المستخدم اللغة، تابع المحادثة باللغة الجديدة مع الحفاظ على السياق
 
 **القواعد الصارمة:**
 • الإجابة فقط على الأسئلة المتعلقة بالقرآن والإسلام
@@ -105,7 +108,7 @@ function isQuranRelatedSimple(question, language) {
 }
 
 // Build conversation context from message history
-function buildConversationContext(conversationHistory, language) {
+function buildConversationContext(conversationHistory, currentLanguage) {
   if (!conversationHistory || conversationHistory.length === 0) {
     return '';
   }
@@ -121,30 +124,48 @@ function buildConversationContext(conversationHistory, language) {
     return '';
   }
 
+  // Detect if there's a language change in the conversation
+  const conversationLanguages = new Set();
+  recentMessages.forEach(msg => {
+    const msgLang = detectLanguage(msg.content);
+    conversationLanguages.add(msgLang);
+  });
+
+  const hasLanguageSwitch = conversationLanguages.size > 1 || !conversationLanguages.has(currentLanguage);
+
   const contextLabels = {
     fr: {
       header: '\n**CONTEXTE DE LA CONVERSATION:**',
       user: 'Utilisateur',
-      assistant: 'Assistant'
+      assistant: 'Assistant',
+      languageNote: 'Note: Cette conversation contient des messages en plusieurs langues. Réponds dans la langue demandée.'
     },
     en: {
       header: '\n**CONVERSATION CONTEXT:**',
       user: 'User',
-      assistant: 'Assistant'
+      assistant: 'Assistant',
+      languageNote: 'Note: This conversation contains messages in multiple languages. Respond in the requested language.'
     },
     ar: {
       header: '\n**سياق المحادثة:**',
       user: 'المستخدم',
-      assistant: 'المساعد'
+      assistant: 'المساعد',
+      languageNote: 'ملاحظة: تحتوي هذه المحادثة على رسائل بلغات متعددة. أجب باللغة المطلوبة.'
     }
   };
 
-  const labels = contextLabels[language] || contextLabels.fr;
+  const labels = contextLabels[currentLanguage] || contextLabels.fr;
   
   let context = labels.header + '\n';
   
+  // Add language switch note if needed
+  if (hasLanguageSwitch) {
+    context += labels.languageNote + '\n\n';
+  }
+  
   recentMessages.forEach(msg => {
     const role = msg.isUser ? labels.user : labels.assistant;
+    // Preserve original message content with language context
     context += `${role}: ${msg.content}\n`;
   });
 
@@ -183,10 +204,10 @@ export async function sendMessage(message, uiLanguage = 'fr', conversationHistor
       };
     }
     
-    // Build conversation context from history
+    // build convo context from history
     const conversationContext = buildConversationContext(conversationHistory, responseLanguage);
     
-    // Generate AI response with specialized system prompt and conversation context
+    // generate ai response with sys prompt & context
     const systemPrompt = systemPrompts[responseLanguage] || systemPrompts.fr;
     const fullPrompt = `${systemPrompt}
 

@@ -52,8 +52,8 @@
 
 /* User Message Bubble */
 .user-message .message-bubble {
-  background: linear-gradient(135deg, var(--brown-500) 0%, var(--brown-600) 100%);
-  color: var(--cream-50);
+  background: linear-gradient(135deg, #6D4C41 0%, #5D4037 100%);
+  color: #FFF8E1;
   border-bottom-right-radius: 8px;
   box-shadow: 
     0 8px 32px rgba(140, 111, 77, 0.15),
@@ -68,7 +68,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 248, 225, 0.08) 0%, transparent 50%);
+  background: linear-gradient(135deg, rgba(255, 248, 225, 0.12) 0%, transparent 50%);
   border-radius: inherit;
   pointer-events: none;
 }
@@ -176,7 +176,7 @@
 }
 
 .user-message .message-timestamp {
-  color: rgba(255, 248, 225, 0.8);
+  color: rgba(255, 248, 225, 0.7);
 }
 
 .bot-message .message-timestamp {
