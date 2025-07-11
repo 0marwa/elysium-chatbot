@@ -256,7 +256,7 @@ export async function sendMessage(message, uiLanguage = 'fr', conversationHistor
     }
     
     // let gemini handle all filtering - it's smarter and understands context better
-    console.log('🧠 letting gemini decide - no pre-filtering');
+    console.log('GEMINI DECISION - NO PRE-FILTERING');
     
     // build conversation context from history
     const conversationContext = buildConversationContext(conversationHistory, responseLanguage);
@@ -269,17 +269,17 @@ ${conversationContext}
 
 Current Question: ${message}`;
     
-    console.log('🤖 SENT REQ WITH CTX');
+    console.log('SENT REQ WITH CTX ✅');
     
     // simple request first to test api
     const testResult = await model.generateContent("Hello");
-    console.log('✅ API TEST PASSED');
+    console.log('API TEST PASSED ✅');
     
     const result = await model.generateContent(fullPrompt);
     const response = await result.response;
     const aiResponse = response.text();
     
-    console.log('✅ response received');
+    console.log('RESPONSE RECEIVED ✅');
     
     // check if gemini refused the question (contains refusal message)
     const isRefusal = Object.values(refusalMessages).some(refusalMsg => 
