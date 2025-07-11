@@ -265,7 +265,7 @@ Current Question: ${message}`;
 
 // fallback responses when api is down
 export async function sendMessageMockFallback(message, uiLanguage = 'fr', conversationHistory = []) {
-  await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
+  await new Promise(resolve => setTimeout(resolve, 1000)); // simulate delay
   
   const detectedLanguage = detectLanguage(message);
   const responseLanguage = detectedLanguage !== 'en' ? detectedLanguage : uiLanguage;
