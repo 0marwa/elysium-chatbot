@@ -9,7 +9,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [language, setLanguage] = useState('fr');
 
-  // Function to handle sending a message
+  // function to handle sending a message
   const handleSendMessage = async (content) => {
     const userMessage = {
       content: content,
@@ -22,7 +22,7 @@ function App() {
     setIsLoading(true);
     
     try {
-      // Call the API with conversation history
+      // call the api with conversation history
       const result = await sendMessage(content, language, messages);
       
       if (result.success) {
@@ -34,7 +34,7 @@ function App() {
         };
         setMessages(prev => [...prev, botMessage]);
       } else {
-        // Handle API error
+        // handle api error
         const errorMessage = {
           content: result.error || "Une erreur est survenue. Veuillez réessayer.",
           isUser: false,
@@ -44,7 +44,7 @@ function App() {
         setMessages(prev => [...prev, errorMessage]);
       }
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error('error sending message:', error);
       const errorMessage = {
         content: "Une erreur de connexion est survenue. Veuillez réessayer.",
         isUser: false,
@@ -61,7 +61,7 @@ function App() {
     setLanguage(newLanguage);
   };
 
-  // Function to clear conversation history
+  // function to clear conversation history
   const handleClearConversation = () => {
     setMessages([]);
   };

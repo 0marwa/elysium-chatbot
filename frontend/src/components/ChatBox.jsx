@@ -51,7 +51,7 @@ const ChatBox = ({ messages, isLoading, language, onLanguageChange, onSuggestion
   const messagesEndRef = useRef(null);
   const t = translations[language] || translations.fr;
 
-  // Auto-scroll to bottom when new messages arrive
+  // auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);

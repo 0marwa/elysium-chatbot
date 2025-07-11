@@ -2,36 +2,36 @@
 
 # setup script for chatbot with gemini integration
 
-echo "Quran Chatbot - Gemini AI Setup"
-echo "================================"
+echo "🕌 quran chatbot - gemini ai setup"
+echo "=================================="
 echo ""
 
-# Check if .env exists
+# check if .env exists
 if [ -f ".env" ]; then
-    echo ".env file already exists"
+    echo "✅ .env file already exists"
     if grep -q "VITE_GEMINI_API_KEY=your_api_key_here" .env; then
-        echo "   Please update your .env file with your actual Gemini API key"
-        echo "   Current placeholder detected: VITE_GEMINI_API_KEY=your_api_key_here"
+        echo "⚠️  please update your .env file with your actual gemini api key"
+        echo "   current placeholder detected: VITE_GEMINI_API_KEY=your_api_key_here"
         echo ""
-        echo "   To get your API key:"
-        echo "   1. Visit: https://makersuite.google.com/app/apikey"
-        echo "   2. Create a new API key"
-        echo "   3. Replace 'your_api_key_here' in .env with your actual key"
+        echo "   to get your api key:"
+        echo "   1. visit: https://makersuite.google.com/app/apikey"
+        echo "   2. create a new api key"
+        echo "   3. replace 'your_api_key_here' in .env with your actual key"
     else
-        echo "  API key appears to be configured"
+        echo "✅ api key appears to be configured"
     fi
 else
-    echo "  Creating .env file from template..."
+    echo "📝 creating .env file from template..."
     cp .env.example .env
-    echo "  Please edit .env and add your Gemini API key"
+    echo "⚠️  please edit .env and add your gemini api key"
     echo ""
-    echo "   To get your API key:"
-    echo "   1. Visit: https://makersuite.google.com/app/apikey"  
-    echo "   2. Create a new API key"
-    echo "   3. Edit .env and replace 'your_actual_gemini_api_key_here' with your key"
+    echo "   to get your api key:"
+    echo "   1. visit: https://makersuite.google.com/app/apikey"  
+    echo "   2. create a new api key"
+    echo "   3. edit .env and replace 'your_actual_gemini_api_key_here' with your key"
 fi
 
 echo ""
-echo " After setting your API key, run:"
+echo "🚀 after setting your api key, run:"
 echo "   npm run dev"
 echo ""

@@ -1,4 +1,4 @@
-/* Luxurious Message Component - Premium Design */
+/* luxurious message component - premium design */
 
 .message-container {
   display: flex;
@@ -50,7 +50,7 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* User Message Bubble */
+/* user message bubble */
 .user-message .message-bubble {
   background: linear-gradient(135deg, #6D4C41 0%, #5D4037 100%);
   color: #FFF8E1;
@@ -73,7 +73,7 @@
   pointer-events: none;
 }
 
-/* Bot Message Bubble */
+/* bot message bubble */
 .bot-message .message-bubble {
   background: linear-gradient(135deg, var(--warm-white) 0%, var(--cream-100) 100%);
   color: var(--brown-800);

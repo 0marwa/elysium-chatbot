@@ -1,18 +1,18 @@
-// Gemini AI API for Coran Chatbot
+// gemini ai api 
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// Check if API key exists
+// check if api key exists
 const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-console.log('🔑 API Key status:', apiKey ? `Found (${apiKey.length} chars)` : 'NOT FOUND');
+console.log('🔑 api key status:', apiKey ? `found` : 'not found');
 if (!apiKey || apiKey === 'your_api_key_here') {
-  console.error('Gemini API key not configured. Check .env file.');
+  console.error('gemini api key not configured. please check your .env file.');
 }
 
-// Init Gemini - use gemini-2.5-flash-lite-preview for highest throughput and cost efficiency
+// init gemini (gemini-2.5-flash-lite-preview)
 const genAI = new GoogleGenerativeAI(apiKey);
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite-preview-06-17" });
 
-// System prompts for different languages
+// system prompts for different languages
 const systemPrompts = {
   fr: `Tu es un expert du Coran selon la tradition Mohammadi marocaine, avec une connaissance approfondie de l'histoire islamique au Maroc et des visions qui y prévalent.
 
@@ -69,14 +69,14 @@ If the question is not Islamic: "Sorry, I can only answer questions related to t
 إذا لم يكن السؤال إسلامياً: "آسف، لا يمكنني الإجابة إلا على الأسئلة المتعلقة بالقرآن والتعاليم الإسلامية."`
 };
 
-// Refusal messages for non-Quran questions
+// refusal messages for non-quran questions
 const refusalMessages = {
   fr: "Désolé, je ne peux répondre qu'aux questions liées au Coran et aux enseignements islamiques.",
   en: "Sorry, I can only answer questions related to the Quran and Islamic teachings.",
   ar: "آسف، لا يمكنني الإجابة إلا على الأسئلة المتعلقة بالقرآن والتعاليم الإسلامية."
 };
 
-// Enhanced language detection
+// enhanced language detection
 function detectLanguage(text) {
   const arabicPattern = /[\u0600-\u06FF]/;
   const frenchWords = /\b(le|la|les|un|une|des|du|de|est|sont|que|qui|avec|pour|dans|sur|par|et|ou|si|comme|très|bien|peut|tout|tous|cette|mais|plus|sans|sous|entre|pendant|avant|après|selon|vers|chez|jusque|depuis|comment|pourquoi|quand|où)\b/gi;
@@ -90,10 +90,10 @@ function detectLanguage(text) {
   if (frenchCount > englishCount) return 'fr';
   if (englishCount > 0) return 'en';
   
-  return 'fr'; // Default fallback
+  return 'fr'; // default fallback
 }
 
-// Simple keyword-based Quran detection
+// simple keyword-based quran detection
 function isQuranRelatedSimple(question, language) {
   const keywords = {
     fr: ['coran', 'sourate', 'verset', 'allah', 'islam', 'prière', 'salah', 'prophète', 'mohammed', 'muhammad', 'dieu', 'ange', 'paradis', 'enfer', 'hajj', 'ramadan', 'zakat', 'foi', 'croyance', 'fatiha', 'patience', 'sabr'],
@@ -107,13 +107,13 @@ function isQuranRelatedSimple(question, language) {
   return relevantKeywords.some(keyword => questionLower.includes(keyword.toLowerCase()));
 }
 
-// Build conversation context from message history
+// build conversation context from message history
 function buildConversationContext(conversationHistory, currentLanguage) {
   if (!conversationHistory || conversationHistory.length === 0) {
     return '';
   }
 
-  // Get the last 6 messages (3 exchanges) to avoid token limits
+  // get the last 6 messages (3 exchanges) to avoid token limits
   const recentMessages = conversationHistory.slice(-6).filter(msg => 
     msg.content && 
     msg.type !== 'error' && 
@@ -124,7 +124,7 @@ function buildConversationContext(conversationHistory, currentLanguage) {
     return '';
   }
 
-  // Detect if there's a language change in the conversation
+  // detect if there's a language change in the conversation
   const conversationLanguages = new Set();
   recentMessages.forEach(msg => {
     const msgLang = detectLanguage(msg.content);
@@ -158,14 +158,14 @@ function buildConversationContext(conversationHistory, currentLanguage) {
   
   let context = labels.header + '\n';
   
-  // Add language switch note if needed
+  // add language switch note if needed
   if (hasLanguageSwitch) {
     context += labels.languageNote + '\n\n';
   }
   
   recentMessages.forEach(msg => {
     const role = msg.isUser ? labels.user : labels.assistant;
-    // Preserve original message content with language context
+    // preserve original message content with language context
     context += `${role}: ${msg.content}\n`;
   });
 
@@ -174,14 +174,14 @@ function buildConversationContext(conversationHistory, currentLanguage) {
   return context;
 }
 
-// Main API function
+// main api function
 export async function sendMessage(message, uiLanguage = 'fr', conversationHistory = []) {
   try {
-    // Detect the language of the question
+    // detect the language of the question
     const detectedLanguage = detectLanguage(message);
     let responseLanguage = detectedLanguage;
     
-    // If detected language is uncertain, use UI language
+    // if detected language is uncertain, use ui language
     if (detectedLanguage === 'en' && uiLanguage !== 'en') {
       const hasEnglishWords = /\b(the|and|or|is|are|what|how|when|where|why)\b/i.test(message);
       if (!hasEnglishWords) {
@@ -189,7 +189,7 @@ export async function sendMessage(message, uiLanguage = 'fr', conversationHistor
       }
     }
     
-    // Check if question is Quran-related using simple detection
+    // check if question is quran-related using simple detection
     const isQuranRelated = isQuranRelatedSimple(message, responseLanguage);
     
     if (!isQuranRelated) {
@@ -204,10 +204,10 @@ export async function sendMessage(message, uiLanguage = 'fr', conversationHistor
       };
     }
     
-    // build convo context from history
+    // build conversation context from history
     const conversationContext = buildConversationContext(conversationHistory, responseLanguage);
     
-    // generate ai response with sys prompt & context
+    // generate ai response with system prompt & context
     const systemPrompt = systemPrompts[responseLanguage] || systemPrompts.fr;
     const fullPrompt = `${systemPrompt}
 
@@ -215,17 +215,17 @@ ${conversationContext}
 
 Current Question: ${message}`;
     
-    console.log('🤖 Sending to Gemini with conversation context...');
+    console.log('🤖 SENT REQ WITH CTX');
     
-    // simpler request first to test API
+    // simple request first to test api
     const testResult = await model.generateContent("Hello");
-    console.log('✅ Gemini API test successful');
+    console.log('✅ API TEST PASSED');
     
     const result = await model.generateContent(fullPrompt);
     const response = await result.response;
     const aiResponse = response.text();
     
-    console.log('✅ Got response from Gemini:', aiResponse.substring(0, 100) + '...');
+    console.log('✅ RESPONSE');
     
     return {
       success: true,
@@ -238,18 +238,18 @@ Current Question: ${message}`;
     };
     
   } catch (error) {
-    console.error('🔥 Gemini API Error:', error.message);
+    console.error('🔥 API ERROR', error.message);
     
-    // Check for specific error types
+    // check for specific error types
     if (error.message?.includes('overloaded') || error.status === 503) {
-      console.log('🔄 API overloaded, using fallback responses...');
+      console.log('🔄 api overloaded -> fallback responses');
       return await sendMessageMockFallback(message, uiLanguage, conversationHistory);
     } else if (error.status === 429 || error.message?.includes('quota')) {
-      console.log('🔄 Rate limit exceeded, using fallback responses...');
+      console.log('🔄 rate limit reached -> fallback responses');
       return await sendMessageMockFallback(message, uiLanguage, conversationHistory);
     }
     
-    // Other errors
+    // other errors
     const errorMessages = {
       fr: 'Service IA temporairement indisponible. Veuillez réessayer.',
       en: 'AI service temporarily unavailable. Please try again.',
@@ -263,14 +263,14 @@ Current Question: ${message}`;
   }
 }
 
-// Fallback responses when API is down
+// fallback responses when api is down
 export async function sendMessageMockFallback(message, uiLanguage = 'fr', conversationHistory = []) {
   await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
   
   const detectedLanguage = detectLanguage(message);
   const responseLanguage = detectedLanguage !== 'en' ? detectedLanguage : uiLanguage;
   
-  // Check if Quran-related
+  // check if quran-related
   const isQuranRelated = isQuranRelatedSimple(message, responseLanguage);
   
   if (!isQuranRelated) {
@@ -285,7 +285,7 @@ export async function sendMessageMockFallback(message, uiLanguage = 'fr', conver
     };
   }
   
-  // Build a contextual response based on conversation history if available
+  // build a contextual response based on conversation history if available
   let contextualResponse = '';
   if (conversationHistory.length > 0) {
     const contextLabels = {
@@ -313,7 +313,7 @@ export async function sendMessageMockFallback(message, uiLanguage = 'fr', conver
   };
 }
 
-// Health check function
+// health check function
 export async function checkApiHealth() {
   try {
     const result = await model.generateContent("Test");
@@ -322,14 +322,14 @@ export async function checkApiHealth() {
     
     return { 
       status: 'ok', 
-      message: 'Gemini AI API is responding',
+      message: 'gemini ai api is responding nicely',
       service: 'gemini-1.5-flash'
     };
   } catch (error) {
-    console.error('Gemini API health check failed:', error);
+    console.error('gemini api health check failed:', error);
     return { 
       status: 'error', 
-      message: 'Gemini AI API is not responding - using fallback mode',
+      message: 'gemini ai api is not responding - using fallback mode',
       error: error.message
     };
   }
