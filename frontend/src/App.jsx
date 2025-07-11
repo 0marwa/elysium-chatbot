@@ -22,8 +22,8 @@ function App() {
     setIsLoading(true);
     
     try {
-      // Call the API
-      const result = await sendMessage(content, language);
+      // Call the API with conversation history
+      const result = await sendMessage(content, language, messages);
       
       if (result.success) {
         const botMessage = {
@@ -61,6 +61,11 @@ function App() {
     setLanguage(newLanguage);
   };
 
+  // Function to clear conversation history
+  const handleClearConversation = () => {
+    setMessages([]);
+  };
+
   return (
     <div className="app">
       <div className="chat-container">
@@ -70,6 +75,7 @@ function App() {
           language={language}
           onLanguageChange={handleLanguageChange}
           onSuggestionClick={handleSendMessage}
+          onClearConversation={handleClearConversation}
         />
         <InputBar 
           onSendMessage={handleSendMessage}

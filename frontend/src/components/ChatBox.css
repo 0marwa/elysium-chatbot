@@ -339,6 +339,45 @@
   }
 }
 
+/* Header controls container */
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  z-index: 1;
+  position: relative;
+}
+
+/* Clear conversation button */
+.clear-conversation-btn {
+  background: rgba(255, 248, 225, 0.15);
+  color: #FFF8E1;
+  border: 1px solid rgba(255, 248, 225, 0.3);
+  padding: 8px 12px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+}
+
+.clear-conversation-btn:hover {
+  background: rgba(255, 69, 58, 0.2);
+  color: #FF453A;
+  border-color: rgba(255, 69, 58, 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 69, 58, 0.2);
+}
+
+.clear-conversation-btn:active {
+  transform: translateY(0);
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .chatbox-header {

@@ -21,6 +21,7 @@ const systemPrompts = {
 • Évite les détails excessifs sur tes sources, sauf si demandé explicitement
 • Ne mentionne pas systématiquement que tu suis la vision mohammadi/marocaine - c'est ton rôle naturel
 • Tes sources principales : Ministère des Habous et Affaires Islamiques, Conseil Supérieur des Oulémas, École Malikite traditionnelle du Maroc, Rabita Mohammadia des Oulémas
+• Utilise le contexte de la conversation précédente pour donner des réponses cohérentes et faire référence aux sujets déjà abordés
 
 **RÈGLES STRICTES:**
 • SEULEMENT répondre aux questions liées au Coran et à l'Islam
@@ -37,6 +38,7 @@ Si la question n'est pas islamique : "Désolé, je ne peux répondre qu'aux ques
 • Avoid excessive details about your sources, unless explicitly requested
 • Don't systematically mention that you follow the Mohammadi/Moroccan vision - it's your natural role
 • Your main sources: Ministry of Habous and Islamic Affairs, Supreme Council of Ulema, Traditional Maliki School of Morocco, Rabita Mohammadia of Scholars
+• Use the previous conversation context to provide coherent responses and reference topics already discussed
 
 **STRICT RULES:**
 • ONLY answer questions related to the Quran and Islam
@@ -53,6 +55,7 @@ If the question is not Islamic: "Sorry, I can only answer questions related to t
 • تجنب التفاصيل المفرطة حول مصادرك، إلا إذا طُلب ذلك صراحة
 • لا تذكر باستمرار أنك تتبع الرؤية المحمدية/المغربية - هذا دورك الطبيعي
 • مصادرك الرئيسية: وزارة الأوقاف والشؤون الإسلامية، المجلس العلمي الأعلى، المدرسة المالكية التقليدية بالمغرب، الرابطة المحمدية للعلماء
+• استخدم سياق المحادثة السابقة لتقديم إجابات متماسكة والإشارة إلى المواضيع التي تم مناقشتها بالفعل
 
 **القواعد الصارمة:**
 • الإجابة فقط على الأسئلة المتعلقة بالقرآن والإسلام
@@ -101,8 +104,57 @@ function isQuranRelatedSimple(question, language) {
   return relevantKeywords.some(keyword => questionLower.includes(keyword.toLowerCase()));
 }
 
+// Build conversation context from message history
+function buildConversationContext(conversationHistory, language) {
+  if (!conversationHistory || conversationHistory.length === 0) {
+    return '';
+  }
+
+  // Get the last 6 messages (3 exchanges) to avoid token limits
+  const recentMessages = conversationHistory.slice(-6).filter(msg => 
+    msg.content && 
+    msg.type !== 'error' && 
+    msg.type !== 'refusal'
+  );
+
+  if (recentMessages.length === 0) {
+    return '';
+  }
+
+  const contextLabels = {
+    fr: {
+      header: '\n**CONTEXTE DE LA CONVERSATION:**',
+      user: 'Utilisateur',
+      assistant: 'Assistant'
+    },
+    en: {
+      header: '\n**CONVERSATION CONTEXT:**',
+      user: 'User',
+      assistant: 'Assistant'
+    },
+    ar: {
+      header: '\n**سياق المحادثة:**',
+      user: 'المستخدم',
+      assistant: 'المساعد'
+    }
+  };
+
+  const labels = contextLabels[language] || contextLabels.fr;
+  
+  let context = labels.header + '\n';
+  
+  recentMessages.forEach(msg => {
+    const role = msg.isUser ? labels.user : labels.assistant;
+    context += `${role}: ${msg.content}\n`;
+  });
+
+  context += '\n---\n';
+  
+  return context;
+}
+
 // Main API function
-export async function sendMessage(message, uiLanguage = 'fr') {
+export async function sendMessage(message, uiLanguage = 'fr', conversationHistory = []) {
   try {
     // Detect the language of the question
     const detectedLanguage = detectLanguage(message);
@@ -131,13 +183,18 @@ export async function sendMessage(message, uiLanguage = 'fr') {
       };
     }
     
-    // Generate AI response with specialized system prompt
+    // Build conversation context from history
+    const conversationContext = buildConversationContext(conversationHistory, responseLanguage);
+    
+    // Generate AI response with specialized system prompt and conversation context
     const systemPrompt = systemPrompts[responseLanguage] || systemPrompts.fr;
     const fullPrompt = `${systemPrompt}
 
-Question: ${message}`;
+${conversationContext}
+
+Current Question: ${message}`;
     
-    console.log('🤖 Sending to Gemini...');
+    console.log('🤖 Sending to Gemini with conversation context...');
     
     // simpler request first to test API
     const testResult = await model.generateContent("Hello");
@@ -165,10 +222,10 @@ Question: ${message}`;
     // Check for specific error types
     if (error.message?.includes('overloaded') || error.status === 503) {
       console.log('🔄 API overloaded, using fallback responses...');
-      return await sendMessageMockFallback(message, uiLanguage);
+      return await sendMessageMockFallback(message, uiLanguage, conversationHistory);
     } else if (error.status === 429 || error.message?.includes('quota')) {
       console.log('🔄 Rate limit exceeded, using fallback responses...');
-      return await sendMessageMockFallback(message, uiLanguage);
+      return await sendMessageMockFallback(message, uiLanguage, conversationHistory);
     }
     
     // Other errors
@@ -186,7 +243,7 @@ Question: ${message}`;
 }
 
 // Fallback responses when API is down
-export async function sendMessageMockFallback(message, uiLanguage = 'fr') {
+export async function sendMessageMockFallback(message, uiLanguage = 'fr', conversationHistory = []) {
   await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
   
   const detectedLanguage = detectLanguage(message);
@@ -207,10 +264,21 @@ export async function sendMessageMockFallback(message, uiLanguage = 'fr') {
     };
   }
   
+  // Build a contextual response based on conversation history if available
+  let contextualResponse = '';
+  if (conversationHistory.length > 0) {
+    const contextLabels = {
+      fr: "En continuant notre discussion, ",
+      en: "Continuing our discussion, ",
+      ar: "في استكمال نقاشنا، "
+    };
+    contextualResponse = contextLabels[responseLanguage] || contextLabels.fr;
+  }
+  
   const responses = {
-    fr: "Selon l'interprétation Mohammadi du Coran, cette question nécessite une réflexion approfondie des textes sacrés. Je recommande de consulter les versets pertinents et leur contexte pour une compréhension complète. (Mode de base - IA temporairement indisponible)",
-    en: "According to the Mohammadi interpretation of the Quran, this question requires deep reflection on the sacred texts. I recommend consulting the relevant verses and their context for complete understanding. (Basic mode - AI temporarily unavailable)",
-    ar: "حسب التفسير المحمدي للقرآن، هذا السؤال يتطلب تأملاً عميقاً في النصوص المقدسة. أنصح بمراجعة الآيات ذات الصلة وسياقها للفهم الكامل. (الوضع الأساسي - الذكاء الاصطناعي غير متاح مؤقتاً)"
+    fr: `${contextualResponse}selon l'interprétation Mohammadi du Coran, cette question nécessite une réflexion approfondie des textes sacrés. Je recommande de consulter les versets pertinents et leur contexte pour une compréhension complète. (Mode de base - IA temporairement indisponible)`,
+    en: `${contextualResponse}according to the Mohammadi interpretation of the Quran, this question requires deep reflection on the sacred texts. I recommend consulting the relevant verses and their context for complete understanding. (Basic mode - AI temporarily unavailable)`,
+    ar: `${contextualResponse}حسب التفسير المحمدي للقرآن، هذا السؤال يتطلب تأملاً عميقاً في النصوص المقدسة. أنصح بمراجعة الآيات ذات الصلة وسياقها للفهم الكامل. (الوضع الأساسي - الذكاء الاصطناعي غير متاح مؤقتاً)`
   };
   
   return {

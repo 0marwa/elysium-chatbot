@@ -14,7 +14,8 @@ const translations = {
       '"Parlez-moi de la Sourate Al-Fatiha"',
       '"Quelle est la signification du verset 2:255 ?"'
     ],
-    loading: 'Veuillez patienter...'
+    loading: 'Veuillez patienter...',
+    clearConversation: 'Nouvelle conversation'
   },
   en: {
     title: 'Quranic Assistant',
@@ -27,7 +28,8 @@ const translations = {
       '"Tell me about Surah Al-Fatiha"',
       '"What is the meaning of verse 2:255?"'
     ],
-    loading: 'Please wait...'
+    loading: 'Please wait...',
+    clearConversation: 'New conversation'
   },
   ar: {
     title: 'مساعد القرآن الكريم',
@@ -40,11 +42,12 @@ const translations = {
       '"أخبرني عن سورة الفاتحة"',
       '"ما معنى الآية 2:255؟"'
     ],
-    loading: 'الرجاء الانتظار...'
+    loading: 'الرجاء الانتظار...',
+    clearConversation: 'محادثة جديدة'
   }
 };
 
-const ChatBox = ({ messages, isLoading, language, onLanguageChange, onSuggestionClick }) => {
+const ChatBox = ({ messages, isLoading, language, onLanguageChange, onSuggestionClick, onClearConversation }) => {
   const messagesEndRef = useRef(null);
   const t = translations[language] || translations.fr;
 
@@ -102,25 +105,36 @@ const ChatBox = ({ messages, isLoading, language, onLanguageChange, onSuggestion
             <p>{t.subtitle}</p>
           </div>
         </div>
-        <div className="language-switcher">
-          <button 
-            className={`language-btn ${language === 'fr' ? 'active' : ''}`}
-            onClick={() => onLanguageChange('fr')}
-          >
-            FR
-          </button>
-          <button 
-            className={`language-btn ${language === 'en' ? 'active' : ''}`}
-            onClick={() => onLanguageChange('en')}
-          >
-            EN
-          </button>
-          <button 
-            className={`language-btn ${language === 'ar' ? 'active' : ''}`}
-            onClick={() => onLanguageChange('ar')}
-          >
-            AR
-          </button>
+        <div className="header-controls">
+          {messages.length > 0 && (
+            <button 
+              className="clear-conversation-btn"
+              onClick={onClearConversation}
+              title={t.clearConversation}
+            >
+              🗑️
+            </button>
+          )}
+          <div className="language-switcher">
+            <button 
+              className={`language-btn ${language === 'fr' ? 'active' : ''}`}
+              onClick={() => onLanguageChange('fr')}
+            >
+              FR
+            </button>
+            <button 
+              className={`language-btn ${language === 'en' ? 'active' : ''}`}
+              onClick={() => onLanguageChange('en')}
+            >
+              EN
+            </button>
+            <button 
+              className={`language-btn ${language === 'ar' ? 'active' : ''}`}
+              onClick={() => onLanguageChange('ar')}
+            >
+              AR
+            </button>
+          </div>
         </div>
       </div>
       
