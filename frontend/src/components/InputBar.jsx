@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import './InputBar.css';
 
 const translations = {
@@ -21,7 +21,54 @@ const translations = {
 
 const InputBar = ({ onSendMessage, isLoading, language = 'fr' }) => {
   const [inputValue, setInputValue] = useState('');
+  const inputRef = useRef(null);
   const t = translations[language] || translations.fr;
+
+  // auto-focus on mount and detect global typing
+  useEffect(() => {
+    // auto-focus the input when component mounts
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+
+    // global keydown listener to detect typing from anywhere
+    const handleGlobalKeyDown = (e) => {
+      // skip if input is already focused
+      if (document.activeElement === inputRef.current) {
+        return;
+      }
+
+      // skip special keys, shortcuts, and non-printable characters
+      if (
+        e.ctrlKey || 
+        e.metaKey || 
+        e.altKey || 
+        e.key === 'Tab' || 
+        e.key === 'Escape' || 
+        e.key === 'Enter' || 
+        e.key.startsWith('Arrow') || 
+        e.key.startsWith('F') || 
+        e.key === 'Backspace' ||
+        e.key === 'Delete' ||
+        e.key.length > 1 // skip other special keys
+      ) {
+        return;
+      }
+
+      // focus input and let the character be typed naturally
+      if (inputRef.current && e.key.length === 1) {
+        inputRef.current.focus();
+      }
+    };
+
+    // add global listener
+    document.addEventListener('keydown', handleGlobalKeyDown);
+
+    // cleanup
+    return () => {
+      document.removeEventListener('keydown', handleGlobalKeyDown);
+    };
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -47,6 +94,7 @@ const InputBar = ({ onSendMessage, isLoading, language = 'fr' }) => {
       <form className="input-form" onSubmit={handleSubmit}>
         <div className="input-wrapper">
           <textarea
+            ref={inputRef}
             className={`message-input ${language === 'ar' ? 'rtl' : 'ltr'}`}
             value={inputValue}
             onChange={handleInputChange}
