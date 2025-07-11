@@ -103,6 +103,7 @@
   position: relative;
   z-index: 1;
   font-family: var(--font-body);
+  padding-bottom: 20px; /* Space for timestamp */
 }
 
 /* Message Types */
@@ -162,23 +163,24 @@
 
 /* Timestamp Styling */
 .message-timestamp {
+  position: absolute;
+  bottom: 8px;
+  right: 12px;
   font-size: 12px;
   color: var(--brown-400);
-  margin-top: 8px;
   font-weight: 400;
   letter-spacing: 0.25px;
   opacity: 0.8;
   transition: opacity 0.3s ease;
+  z-index: 2;
 }
 
 .user-message .message-timestamp {
-  text-align: right;
-  color: var(--brown-500);
+  color: rgba(255, 248, 225, 0.8);
 }
 
 .bot-message .message-timestamp {
-  text-align: left;
-  margin-left: 60px; /* Account for avatar width + gap */
+  color: var(--brown-400);
 }
 
 /* Hover Effects */
@@ -236,10 +238,6 @@
   .bot-icon {
     font-size: 18px;
   }
-  
-  .bot-message .message-timestamp {
-    margin-left: 54px; /* Adjusted for smaller avatar */
-  }
 }
 
 @media (max-width: 480px) {
@@ -269,11 +267,8 @@
   
   .message-timestamp {
     font-size: 11px;
-    margin-top: 6px;
-  }
-  
-  .bot-message .message-timestamp {
-    margin-left: 44px; /* Adjusted for smaller avatar and gap */
+    bottom: 6px;
+    right: 10px;
   }
 }
 
