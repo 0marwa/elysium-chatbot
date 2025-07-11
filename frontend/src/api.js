@@ -93,7 +93,7 @@ function detectLanguage(text) {
   return 'fr'; // default fallback
 }
 
-// simple keyword-based quran detection
+// simple keyword-based quran detection (fallback method)
 function isQuranRelatedSimple(question, language) {
   const keywords = {
     fr: ['coran', 'sourate', 'verset', 'allah', 'islam', 'prière', 'salah', 'prophète', 'mohammed', 'muhammad', 'dieu', 'ange', 'paradis', 'enfer', 'hajj', 'ramadan', 'zakat', 'foi', 'croyance', 'fatiha', 'patience', 'sabr'],
@@ -105,6 +105,72 @@ function isQuranRelatedSimple(question, language) {
   const relevantKeywords = [...(keywords[language] || []), ...keywords.fr, ...keywords.en];
   
   return relevantKeywords.some(keyword => questionLower.includes(keyword.toLowerCase()));
+}
+
+// smart context-aware quran detection
+function isQuranRelatedSmart(message, conversationHistory, language) {
+  console.log('🧠 smart filtering:', message.substring(0, 50) + '...');
+  
+  // step 1: check if recent conversation was islamic
+  const recentIslamicMessages = conversationHistory
+    .slice(-6) // last 6 messages
+    .filter(msg => msg.isCoranRelated === true);
+  
+  const hasRecentIslamicContext = recentIslamicMessages.length > 0;
+  console.log('📜 recent islamic context:', hasRecentIslamicContext);
+  
+  // step 2: check for contextual/referencing words
+  const contextualWords = {
+    fr: ['la', 'le', 'cette', 'ce', 'ça', 'cela', 'récite', 'dis', 'explique', 'comment', 'pourquoi', 'raconte', 'parle', 'moi'],
+    en: ['it', 'this', 'that', 'recite', 'tell', 'explain', 'how', 'why', 'about', 'me'],
+    ar: ['هذا', 'هذه', 'ذلك', 'تلك', 'اقرأ', 'اتل', 'قل', 'اشرح', 'كيف', 'لماذا', 'لي']
+  };
+  
+  const messageLower = message.toLowerCase();
+  const hasContextualWords = contextualWords[language]?.some(word => 
+    messageLower.includes(word.toLowerCase())
+  ) || false;
+  console.log('🔗 contextual words found:', hasContextualWords);
+  
+  // step 3: check for follow-up patterns
+  const followUpPatterns = {
+    fr: [/récite|dis.*(moi|nous)|explique.*(moi|nous)|comment.*ça|qu'est.ce|raconte.*(moi|nous)/i],
+    en: [/recite|tell me|explain|how do|what is|about it/i],
+    ar: [/اقرأ|اتل|قل لي|اشرح|كيف|ما هو|عنها/i]
+  };
+  
+  const hasFollowUpPattern = followUpPatterns[language]?.some(pattern => 
+    pattern.test(message)
+  ) || false;
+  console.log('🔄 follow-up pattern found:', hasFollowUpPattern);
+  
+  // step 4: original keyword check
+  const hasIslamicKeywords = isQuranRelatedSimple(message, language);
+  console.log('🔑 islamic keywords found:', hasIslamicKeywords);
+  
+  // step 5: smart decision logic
+  if (hasIslamicKeywords) {
+    console.log('✅ approved: direct islamic keywords');
+    return true;
+  }
+  
+  if (hasRecentIslamicContext && hasContextualWords) {
+    console.log('✅ approved: islamic context + contextual words');
+    return true;
+  }
+  
+  if (hasRecentIslamicContext && hasFollowUpPattern) {
+    console.log('✅ approved: islamic context + follow-up pattern');
+    return true;
+  }
+  
+  if (hasRecentIslamicContext && message.length < 25) {
+    console.log('✅ approved: islamic context + short message (likely follow-up)');
+    return true;
+  }
+  
+  console.log('❌ rejected: no islamic indicators');
+  return false;
 }
 
 // build conversation context from message history
@@ -189,8 +255,8 @@ export async function sendMessage(message, uiLanguage = 'fr', conversationHistor
       }
     }
     
-    // check if question is quran-related using simple detection
-    const isQuranRelated = isQuranRelatedSimple(message, responseLanguage);
+    // check if question is quran-related using smart context-aware detection
+    const isQuranRelated = isQuranRelatedSmart(message, conversationHistory, responseLanguage);
     
     if (!isQuranRelated) {
       return {
@@ -270,8 +336,8 @@ export async function sendMessageMockFallback(message, uiLanguage = 'fr', conver
   const detectedLanguage = detectLanguage(message);
   const responseLanguage = detectedLanguage !== 'en' ? detectedLanguage : uiLanguage;
   
-  // check if quran-related
-  const isQuranRelated = isQuranRelatedSimple(message, responseLanguage);
+  // check if quran-related using smart detection
+  const isQuranRelated = isQuranRelatedSmart(message, conversationHistory, responseLanguage);
   
   if (!isQuranRelated) {
     return {
