@@ -109,7 +109,7 @@ function isQuranRelatedSimple(question, language) {
 
 // smart context-aware quran detection
 function isQuranRelatedSmart(message, conversationHistory, language) {
-  console.log('🧠 smart filtering:', message.substring(0, 50) + '...');
+  console.log('SMART FILTERING', message.substring(0, 50) + '...');
   
   // step 1: check if recent conversation was islamic
   const recentIslamicMessages = conversationHistory
@@ -117,7 +117,7 @@ function isQuranRelatedSmart(message, conversationHistory, language) {
     .filter(msg => msg.isCoranRelated === true);
   
   const hasRecentIslamicContext = recentIslamicMessages.length > 0;
-  console.log('📜 recent islamic context:', hasRecentIslamicContext);
+  console.log('RECENT CTX', hasRecentIslamicContext);
   
   // step 2: check for contextual/referencing words
   const contextualWords = {
@@ -130,7 +130,7 @@ function isQuranRelatedSmart(message, conversationHistory, language) {
   const hasContextualWords = contextualWords[language]?.some(word => 
     messageLower.includes(word.toLowerCase())
   ) || false;
-  console.log('🔗 contextual words found:', hasContextualWords);
+  console.log('contextual words found:', hasContextualWords);
   
   // step 3: check for follow-up patterns
   const followUpPatterns = {
@@ -142,34 +142,34 @@ function isQuranRelatedSmart(message, conversationHistory, language) {
   const hasFollowUpPattern = followUpPatterns[language]?.some(pattern => 
     pattern.test(message)
   ) || false;
-  console.log('🔄 follow-up pattern found:', hasFollowUpPattern);
+  console.log('follow-up pattern found:', hasFollowUpPattern);
   
   // step 4: original keyword check
   const hasIslamicKeywords = isQuranRelatedSimple(message, language);
-  console.log('🔑 islamic keywords found:', hasIslamicKeywords);
+  console.log('islamic keywords found:', hasIslamicKeywords);
   
   // step 5: smart decision logic
   if (hasIslamicKeywords) {
-    console.log('✅ approved: direct islamic keywords');
+    console.log('✅ APPROVED [direct islamic keywords]');
     return true;
   }
   
   if (hasRecentIslamicContext && hasContextualWords) {
-    console.log('✅ approved: islamic context + contextual words');
+    console.log('✅ APPROVED [islamic context + contextual words]');
     return true;
   }
   
   if (hasRecentIslamicContext && hasFollowUpPattern) {
-    console.log('✅ approved: islamic context + follow-up pattern');
+    console.log('✅ APPROVED [islamic context + follow-up pattern]');
     return true;
   }
   
   if (hasRecentIslamicContext && message.length < 25) {
-    console.log('✅ approved: islamic context + short message (likely follow-up)');
+    console.log('✅ APPROVED [islamic context + short message]');
     return true;
   }
   
-  console.log('❌ rejected: no islamic indicators');
+  console.log('❌ REJECTED');
   return false;
 }
 
@@ -255,20 +255,8 @@ export async function sendMessage(message, uiLanguage = 'fr', conversationHistor
       }
     }
     
-    // check if question is quran-related using smart context-aware detection
-    const isQuranRelated = isQuranRelatedSmart(message, conversationHistory, responseLanguage);
-    
-    if (!isQuranRelated) {
-      return {
-        success: true,
-        data: {
-          response: refusalMessages[responseLanguage] || refusalMessages.fr,
-          type: 'refusal',
-          language: responseLanguage,
-          isCoranRelated: false
-        }
-      };
-    }
+    // let gemini handle all filtering - it's smarter and understands context better
+    console.log('🧠 letting gemini decide - no pre-filtering');
     
     // build conversation context from history
     const conversationContext = buildConversationContext(conversationHistory, responseLanguage);
@@ -291,15 +279,20 @@ Current Question: ${message}`;
     const response = await result.response;
     const aiResponse = response.text();
     
-    console.log('✅ RESPONSE');
+    console.log('✅ response received');
+    
+    // check if gemini refused the question (contains refusal message)
+    const isRefusal = Object.values(refusalMessages).some(refusalMsg => 
+      aiResponse.toLowerCase().includes(refusalMsg.toLowerCase().substring(0, 20))
+    );
     
     return {
       success: true,
       data: {
         response: aiResponse,
-        type: 'ai-response',
+        type: isRefusal ? 'refusal' : 'ai-response',
         language: responseLanguage,
-        isCoranRelated: true
+        isCoranRelated: !isRefusal
       }
     };
     
@@ -336,20 +329,8 @@ export async function sendMessageMockFallback(message, uiLanguage = 'fr', conver
   const detectedLanguage = detectLanguage(message);
   const responseLanguage = detectedLanguage !== 'en' ? detectedLanguage : uiLanguage;
   
-  // check if quran-related using smart detection
-  const isQuranRelated = isQuranRelatedSmart(message, conversationHistory, responseLanguage);
-  
-  if (!isQuranRelated) {
-    return {
-      success: true,
-      data: {
-        response: refusalMessages[responseLanguage] || refusalMessages.fr,
-        type: 'refusal',
-        language: responseLanguage,
-        isCoranRelated: false
-      }
-    };
-  }
+  // let gemini handle all filtering in fallback mode too
+  console.log('🧠 fallback mode - letting gemini decide');
   
   // build a contextual response based on conversation history if available
   let contextualResponse = '';
