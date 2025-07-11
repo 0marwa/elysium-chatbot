@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
 import './Message.css';
 
 const Message = ({ message, isUser, timestamp, type = 'normal' }) => {
@@ -14,7 +15,11 @@ const Message = ({ message, isUser, timestamp, type = 'normal' }) => {
     <div className={`message-container ${isUser ? 'user-message' : 'bot-message'}`}>
       <div className={`message-bubble ${type}`}>
         <div className="message-content">
-          {message}
+          {isUser ? (
+            message
+          ) : (
+            <ReactMarkdown>{message}</ReactMarkdown>
+          )}
         </div>
         {timestamp && (
           <div className="message-timestamp">
